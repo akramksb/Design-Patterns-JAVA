@@ -1,10 +1,10 @@
 import compresser.Compresser;
 import compresser.CompresserImpl;
 import filter.Filter;
-import filter.adapter.FilterAdapter;
+import filter.FilterImpl;
 
 public class Frame {
-    private Filter filter = new FilterAdapter();
+    private Filter filter = new FilterImpl();
     private Compresser compresser = new CompresserImpl();
 
     public int[] filter( int[] data ){
