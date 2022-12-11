@@ -74,9 +74,52 @@ Example of logging aspect:
 @Aspect
 @EnableAspectJAutoProxy
 public class LogAspect {
-    @Before("execution(* ma.enset.service..*(..))")
-    public void log(){
-        System.out.println("From Logging Aspect... Before");
+    @Around("execution(* ma.enset.service..*(..))")
+    public Object log(ProceedingJoinPoint proceedingJoinPoint) throws Throwable {
+        long t1 = System.currentTimeMillis();
+        System.out.println("From Logging Aspect... Before "+proceedingJoinPoint.getSignature());
+        Object result = proceedingJoinPoint.proceed();
+        System.out.println("From Logging Aspect... After "+proceedingJoinPoint.getSignature());
+        long t2 = System.currentTimeMillis();
+        System.out.println("Duration : "+ (t2-t1)+" ms");
+        return result;
+    }
+}
+```
+
+Example of a security aspect using annotations:
+
+First to authenticate a user we will create the following class:
+```java
+public class SecurityContext {
+    private static String username="";
+    private static String password="";
+    private static String[] roles= {};
+    public static void authenticate(String u, String p, String[] r){...}
+    public static boolean hasRole(String r){...}
+}
+```
+Our Security Aspect :
+```java
+@Component
+@Aspect
+@EnableAspectJAutoProxy
+public class AuthorizationAspect {
+    @Around(value = "@annotation(securedByAspect)", argNames = "pjp,securedByAspect")
+    public Object secure(ProceedingJoinPoint pjp, SecuredByAspect securedByAspect) throws Throwable {
+        String[] roles = securedByAspect.roles();
+        boolean authorized = false;
+        for (String r : roles) {
+            if (SecurityContext.hasRole(r)) {
+                authorized = true;
+                break;
+            }
+        }
+        if (authorized==true){
+            Object result = pjp.proceed();
+            return result;
+        }
+        throw new RuntimeException("Not Authorized");
     }
 }
 ```
