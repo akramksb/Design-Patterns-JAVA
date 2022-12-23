@@ -1,3 +1,3 @@
 package ma.enset.aspects;
 
-public @interface Log { }
+public @interface Lock { }
